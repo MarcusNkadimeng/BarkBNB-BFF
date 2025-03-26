@@ -1,4 +1,4 @@
-const admin = require("../config/firebaseAdmin");
+const admin = require("../config/firebaseAdmin.js");
 
 const firebaseAuthMiddleware = async (req, resizeBy, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -16,4 +16,4 @@ const firebaseAuthMiddleware = async (req, resizeBy, next) => {
   }
 };
 
-export default firebaseAuthMiddleware;
+module.exports = firebaseAuthMiddleware;

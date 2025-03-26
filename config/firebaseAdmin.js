@@ -1,12 +1,13 @@
-import admin from "firebase-admin";
-import { readFileSync } from "fs";
-import path from "path";
-import dotenv from "dotenv";
+const admin = require("firebase-admin");
+
+const readFileSync = require("fs").readFileSync;
+const dotenv = require("dotenv");
 
 dotenv.config();
 
-const serviceAccountPath = path.join(process.cwd(), "serviceAccountKey.json");
-const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf-8"));
+const serviceAccount = JSON.parse(
+  readFileSync("./config/serviceAccountKey.json", "utf-8")
+);
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -14,4 +15,4 @@ if (!admin.apps.length) {
   });
 }
 
-export default admin;
+module.exports = admin;

@@ -1,6 +1,6 @@
-const Router = require("express");
-const firebaseAuthMiddleware = require("../middlewares/firebaseAuthMiddleware.js");
+const express = require("express");
 const router = express.Router();
+const firebaseAuthMiddleware = require("../middlewares/firebaseAuthMiddleware.js");
 const db = require("../db/index.js");
 
 router.get("/pets", firebaseAuthMiddleware, async (req, res) => {
@@ -17,7 +17,7 @@ router.get("/pets", firebaseAuthMiddleware, async (req, res) => {
 });
 
 router.post("/", firebaseAuthMiddleware, async (req, res) => {
-  const userId = req.user.uid; // Extract user ID
+  const userId = req.user.uid;
   const {
     name,
     breed,
@@ -43,7 +43,7 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
 
   try {
     const result = await db.query(
-      "INSERT INTO pets (user_id, name, breed, gender, image) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      "INSERT INTO pets (user_id, name, breed, gender, image, dietary_requirements, birthdate, vaccine_status, neutered) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
       [
         userId,
         name,
@@ -78,7 +78,6 @@ router.put("/:petId", firebaseAuthMiddleware, async (req, res) => {
   } = req.body;
 
   try {
-    // Check if the pet belongs to the authenticated user
     const pet = await db.query(
       "SELECT * FROM pets WHERE id = $1 AND user_id = $2",
       [petId, userId]
@@ -89,7 +88,7 @@ router.put("/:petId", firebaseAuthMiddleware, async (req, res) => {
     }
 
     const result = await db.query(
-      "UPDATE pets SET name = $1, breed = $2, gender = $3, image = $4 WHERE id = $5 RETURNING *",
+      "UPDATE pets SET name = $1, breed = $2, gender = $3, image = $4, dietary_requirements = $5, birthdate = $6, vaccine_status = $7, neutered = $8 WHERE id = $9 RETURNING *",
       [
         name,
         breed,
@@ -115,7 +114,6 @@ router.delete("/:petId", firebaseAuthMiddleware, async (req, res) => {
   const { petId } = req.params;
 
   try {
-    // Check if the pet belongs to the authenticated user
     const pet = await db.query(
       "SELECT * FROM pets WHERE id = $1 AND user_id = $2",
       [petId, userId]
