@@ -1,12 +1,14 @@
 const admin = require("firebase-admin");
-
 const readFileSync = require("fs").readFileSync;
 const dotenv = require("dotenv");
 
 dotenv.config();
 
 const serviceAccount = JSON.parse(
-  readFileSync("./config/serviceAccountKey.json", "utf-8")
+  readFileSync(
+    process.env.SERVICE_ACCOUNT_KEY_PATH || "./config/serviceAccountKey.json",
+    "utf-8"
+  )
 );
 
 if (!admin.apps.length) {

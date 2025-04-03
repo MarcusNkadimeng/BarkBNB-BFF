@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    uid UUID PRIMARY KEY,
+    uid TEXT PRIMARY KEY,
     firstname VARCHAR(255) NOT NULL,
     lastname VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -9,10 +9,12 @@ CREATE TABLE users (
 
 CREATE TABLE pets (
     id SERIAL PRIMARY KEY,
-    user_uid UUID REFERENCES users(uid) ON DELETE CASCADE,
+    user_uid TEXT REFERENCES users(uid) ON DELETE CASCADE,
     name VARCHAR(100),
     breed VARCHAR(100),
-    dietary_requirements VARCHAR(100),
+    image VARCHAR(255),
+    dietary_requirements VARCHAR(200),
+    medical_requirements VARCHAR(200),
     gender VARCHAR(10),
     birthdate DATE,
     vaccine_status VARCHAR(100),
@@ -34,7 +36,7 @@ CREATE TABLE units (
 
 CREATE TABLE bookings (
     id SERIAL PRIMARY KEY,
-    user_uid UUID REFERENCES users(uid) ON DELETE CASCADE,
+    user_uid TEXT REFERENCES users(uid) ON DELETE CASCADE,
     service_packkage_id INT REFERENCES packages(id) ON DELETE SET NULL,
     unit_id INT REFERENCES units(id) ON DELETE SET NULL,
     booking_date TIMESTAMP NOT NULL DEFAULT NOW()
