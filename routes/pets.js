@@ -1,11 +1,12 @@
-const Router = require("express");
-const firebaseAuthMiddleware = require("../middlewares/firebaseAuthMiddleware.js");
+const express = require("express");
 const router = express.Router();
+const firebaseAuthMiddleware = require("../middlewares/firebaseAuthMiddleware.js");
 const db = require("../db/index.js");
 
-router.get("/pets", firebaseAuthMiddleware, async (req, res) => {
+router.get("/", firebaseAuthMiddleware, async (req, res) => {
   try {
     const userUid = req.user.uid;
+    console.log("User UID:", userUid);
     const pets = await db.query("SELECT * FROM pets WHERE user_uid = $1", [
       userUid,
     ]);
@@ -16,14 +17,31 @@ router.get("/pets", firebaseAuthMiddleware, async (req, res) => {
   }
 });
 
+router.get("/:petId", firebaseAuthMiddleware, async (req, res) => {
+  const { petId } = req.params;
+
+  try {
+    const pet = await db.query("SELECT * FROM pets WHERE id = $1", [petId]);
+
+    if (!pet.rows.length) {
+      return res.status(404).json({ message: "Pet not found" });
+    }
+    res.json(pet.rows);
+  } catch (error) {
+    console.error("Error fetching pet:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.post("/", firebaseAuthMiddleware, async (req, res) => {
-  const userId = req.user.uid; // Extract user ID
+  const userId = req.user.uid;
   const {
     name,
     breed,
     gender,
     image,
     dietary_requirements,
+    medical_requirements,
     birthdate,
     vaccine_status,
     neutered,
@@ -33,17 +51,21 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
     !name ||
     !breed ||
     !gender ||
+    !image ||
     !dietary_requirements ||
+    !medical_requirements ||
     !birthdate ||
     !vaccine_status ||
-    !neutered
+    neutered === undefined
   ) {
-    return res.status(400).json({ error: "Missing required fields" });
+    return res
+      .status(400)
+      .json({ error: "Missing required fields", fields: req.body });
   }
 
   try {
     const result = await db.query(
-      "INSERT INTO pets (user_id, name, breed, gender, image) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      "INSERT INTO pets (user_uid, name, breed, gender, image, dietary_requirements, medical_requirements, birthdate, vaccine_status, neutered) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
       [
         userId,
         name,
@@ -51,6 +73,7 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
         gender,
         image,
         dietary_requirements,
+        medical_requirements,
         birthdate,
         vaccine_status,
         neutered,
@@ -66,48 +89,41 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
 router.put("/:petId", firebaseAuthMiddleware, async (req, res) => {
   const userId = req.user.uid;
   const { petId } = req.params;
-  const {
-    name,
-    breed,
-    gender,
-    image,
-    dietary_requirements,
-    birthdate,
-    vaccine_status,
-    neutered,
-  } = req.body;
+  const keys = [
+    "name",
+    "breed",
+    "gender",
+    "image",
+    "dietary_requirements",
+    "medical_requirements",
+    "birthdate",
+    "vaccine_status",
+    "neutered",
+  ];
 
-  try {
-    // Check if the pet belongs to the authenticated user
-    const pet = await db.query(
-      "SELECT * FROM pets WHERE id = $1 AND user_id = $2",
-      [petId, userId]
-    );
+  const fields = [];
 
-    if (pet.rows.length === 0) {
-      return res.status(403).json({ error: "Unauthorized to update this pet" });
+  keys.forEach((key) => {
+    if (req.body[key]) {
+      fields.push(key);
     }
+  });
 
-    const result = await db.query(
-      "UPDATE pets SET name = $1, breed = $2, gender = $3, image = $4 WHERE id = $5 RETURNING *",
-      [
-        name,
-        breed,
-        gender,
-        image,
-        petId,
-        dietary_requirements,
-        birthdate,
-        vaccine_status,
-        neutered,
-      ]
+  fields.forEach((field, index) => {
+    db.query(
+      `UPDATE pets SET ${field} = $1 WHERE id = $2 AND user_uid = $3`,
+      [req.body[field], petId, userId],
+      (err, result) => {
+        if (err) {
+          console.error("Error updating pet:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
+        if (index === fields.length - 1) {
+          res.redirect("/api/pets");
+        }
+      }
     );
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error("Error updating pet:", error);
-    res.status(500).json({ error: "Database error" });
-  }
+  });
 });
 
 router.delete("/:petId", firebaseAuthMiddleware, async (req, res) => {
@@ -115,9 +131,8 @@ router.delete("/:petId", firebaseAuthMiddleware, async (req, res) => {
   const { petId } = req.params;
 
   try {
-    // Check if the pet belongs to the authenticated user
     const pet = await db.query(
-      "SELECT * FROM pets WHERE id = $1 AND user_id = $2",
+      "SELECT * FROM pets WHERE id = $1 AND user_uid = $2",
       [petId, userId]
     );
 
