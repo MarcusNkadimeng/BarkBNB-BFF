@@ -5,7 +5,8 @@ const db = require("../db/index.js");
 
 router.get("/", firebaseAuthMiddleware, async (req, res) => {
   try {
-    const userUid = firebaseAuthMiddleware.decodedToken.uid;
+    const userUid = req.user.uid;
+    console.log("User UID:", userUid);
     const pets = await db.query("SELECT * FROM pets WHERE user_uid = $1", [
       userUid,
     ]);
@@ -55,9 +56,11 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
     !medical_requirements ||
     !birthdate ||
     !vaccine_status ||
-    !neutered
+    neutered === undefined
   ) {
-    return res.status(400).json({ error: "Missing required fields" });
+    return res
+      .status(400)
+      .json({ error: "Missing required fields", fields: req.body });
   }
 
   try {
