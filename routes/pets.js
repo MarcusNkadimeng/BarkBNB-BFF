@@ -51,7 +51,7 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
     !name ||
     !breed ||
     !gender ||
-    !image ||
+    // !image ||
     !dietary_requirements ||
     !medical_requirements ||
     !birthdate ||
