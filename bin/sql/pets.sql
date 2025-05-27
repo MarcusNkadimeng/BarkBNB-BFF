@@ -12,7 +12,6 @@ CREATE TABLE pets (
     user_uid TEXT REFERENCES users(uid) ON DELETE CASCADE,
     name VARCHAR(100),
     breed VARCHAR(100),
-    image VARCHAR(255),
     dietary_requirements VARCHAR(200),
     medical_requirements VARCHAR(200),
     gender VARCHAR(10),

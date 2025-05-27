@@ -39,7 +39,6 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
     name,
     breed,
     gender,
-    image,
     dietary_requirements,
     medical_requirements,
     birthdate,
@@ -51,7 +50,6 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
     !name ||
     !breed ||
     !gender ||
-    // !image ||
     !dietary_requirements ||
     !medical_requirements ||
     !birthdate ||
@@ -65,13 +63,12 @@ router.post("/", firebaseAuthMiddleware, async (req, res) => {
 
   try {
     const result = await db.query(
-      "INSERT INTO pets (user_uid, name, breed, gender, image, dietary_requirements, medical_requirements, birthdate, vaccine_status, neutered) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
+      "INSERT INTO pets (user_uid, name, breed, gender, dietary_requirements, medical_requirements, birthdate, vaccine_status, neutered) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
       [
         userId,
         name,
         breed,
         gender,
-        image,
         dietary_requirements,
         medical_requirements,
         birthdate,
@@ -93,7 +90,6 @@ router.put("/:petId", firebaseAuthMiddleware, async (req, res) => {
     "name",
     "breed",
     "gender",
-    "image",
     "dietary_requirements",
     "medical_requirements",
     "birthdate",
