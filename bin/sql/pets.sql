@@ -12,7 +12,6 @@ CREATE TABLE pets (
     user_uid TEXT REFERENCES users(uid) ON DELETE CASCADE,
     name VARCHAR(100),
     breed VARCHAR(100),
-    image VARCHAR(255),
     dietary_requirements VARCHAR(200),
     medical_requirements VARCHAR(200),
     gender VARCHAR(10),
@@ -24,8 +23,9 @@ CREATE TABLE pets (
 CREATE TABLE packages (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description VARCHAR(255),
-    price DECIMAL(10, 2) NOT NULL
+    description VARCHAR(1000),
+    price DECIMAL(10, 2) NOT NULL,
+    image_url TEXT
 );
 
 CREATE TABLE units (
@@ -37,7 +37,9 @@ CREATE TABLE units (
 CREATE TABLE bookings (
     id SERIAL PRIMARY KEY,
     user_uid TEXT REFERENCES users(uid) ON DELETE CASCADE,
-    service_packkage_id INT REFERENCES packages(id) ON DELETE SET NULL,
+    pet_id INT REFERENCES pets(id) ON DELETE CASCADE,
+    service_package_id INT REFERENCES packages(id) ON DELETE SET NULL,
     unit_id INT REFERENCES units(id) ON DELETE SET NULL,
-    booking_date TIMESTAMP NOT NULL DEFAULT NOW()
+    start_date DATE,
+    end_date DATE
 );
