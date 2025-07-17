@@ -4,16 +4,16 @@ const firebaseAuthMiddleware = require("../middlewares/firebaseAuthMiddleware.js
 const db = require("../db/index.js");
 
 router.post("/", firebaseAuthMiddleware, async (req, res) => {
-  const { name, description, price } = req.body;
+  const { name, description, price, serviceImageUrl } = req.body;
 
-  if (!name || !description || !price) {
+  if (!name || !description || !price || !serviceImageUrl) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
     const result = await db.query(
-      "INSERT INTO packages (name, description, price) VALUES ($1, $2, $3) RETURNING *",
-      [name, description, price]
+      "INSERT INTO packages (name, description, price, image_url) VALUES ($1, $2, $3, $4) RETURNING *",
+      [name, description, price, serviceImageUrl]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
