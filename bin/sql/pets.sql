@@ -41,5 +41,6 @@ CREATE TABLE bookings (
     service_package_id INT REFERENCES packages(id) ON DELETE SET NULL,
     unit_id INT REFERENCES units(id) ON DELETE SET NULL,
     start_date DATE,
-    end_date DATE
+    end_date DATE,
+    status VARCHAR(50) DEFAULT 'Pending' CHECK (status IN ('Pending', 'Confirmed', 'Cancelled', 'Completed'))
 );
